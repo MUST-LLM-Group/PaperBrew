@@ -1,0 +1,119 @@
+Button {
+    width: 16;
+}
+
+Terminal {
+    width: 100%;
+    height: 100%;
+    background: red;
+}
+
+RichLog {
+    height: 20;
+    width: 100%;
+    background: black 0%;
+}
+
+#pip_rich_log {
+    height: 20;
+    width: 100%;
+}
+
+DashBoard {
+    layout: grid;
+    grid-size: 12 12;
+}
+
+#basic_info {
+    column-span: 3;
+    row-span: 4;
+}
+
+CPU {
+    column-span: 6;
+    row-span: 4;
+    border: solid #9ACBD0;
+}
+GPU {
+    column-span: 12;
+    row-span: 6;
+    border: solid #9ACBD0;
+}
+Mem {
+    column-span: 6;
+    row-span: 4;
+    height: 100%;
+    border: solid #9ACBD0;
+}
+Disk {
+    column-span: 6;
+    row-span: 4;
+    height: 100%;
+    border: solid #9ACBD0;
+}
+MemChart {
+    height: 4;
+}
+
+#cpu {
+    column-span: 3;
+    row-span: 4;
+}
+
+#gpu {
+    column-span: 6;
+    row-span: 4;
+}
+
+#gpu_label {
+    width: 100%;
+}
+
+#disk {
+    column-span: 3;
+    row-span: 4;
+}
+
+#hf {
+    column-span: 3;
+    row-span: 4;
+}
+
+#conda_env_listview {
+    margin: 1;
+}
+
+#new_env_name_input {
+    width: 40%;
+}
+
+#new_env_version_select {
+    width: 16;
+}
+
+#pip_mirror_label {
+    align: left bottom;
+}
+
+#pip_install_package_name_input {
+    width: 30%;
+}
+
+#pip_package_list_view {
+    height: 30%;
+}
+
+.box {
+    height: 100%;
+    border: solid #9ACBD0;
+}
+
+.disk_label_left {
+    width: 30%;
+    text-align: left;
+}
+
+.disk_label_right {
+    width: 70%;
+    text-align: right;
+}
