@@ -176,13 +176,14 @@ class Terminal(Widget, can_focus=True):
             await self.send_queue.put(["stdin", char])
 
     async def on_resize(self, _event: events.Resize) -> None:
+        self._screen.resize(_event.size.height, _event.size.width)
         if self.emulator is None:
             return
 
         self.ncol = self.size.width
         self.nrow = self.size.height
         await self.send_queue.put(["set_size", self.nrow, self.ncol])
-        self._screen.resize(self.nrow, self.ncol)
+        # self._screen.resize(self.nrow, self.ncol)
 
     async def on_click(self, event: events.MouseEvent):
         if self.emulator is None:
