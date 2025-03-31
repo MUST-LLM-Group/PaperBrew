@@ -78,15 +78,12 @@ class Terminal(Widget, can_focus=True):
         id: str | None = None,
         classes: str | None = None,
     ) -> None:
+        super().__init__(name=name, id=id, classes=classes)
         self.command = command
         self.default_colors = default_colors
 
         if default_colors == "textual":
             self.textual_colors = self.detect_textual_colors()
-
-        # default size, will be adapted on_resize
-        self.ncol = 80
-        self.nrow = 24
         self.mouse_tracking = False
 
         # variables used when starting the emulator: self.start()
@@ -129,10 +126,11 @@ class Terminal(Widget, can_focus=True):
             "f20": "\x1b[34~",
         }
         self._display = self.initial_display()
-        self._screen = TerminalPyteScreen(self.ncol, self.nrow)
+        self._screen = TerminalPyteScreen(80, 24)
         self.stream = pyte.Stream(self._screen)
 
-        super().__init__(name=name, id=id, classes=classes)
+    def on_mount(self, event: events.Mount) -> None:
+        pass
 
     def start(self) -> None:
         if self.emulator is not None:
@@ -177,11 +175,12 @@ class Terminal(Widget, can_focus=True):
 
     async def on_resize(self, _event: events.Resize) -> None:
         self._screen.resize(_event.size.height, _event.size.width)
+        self.ncol = self.size.width
+        self.nrow = self.size.height
+
         if self.emulator is None:
             return
 
-        self.ncol = self.size.width
-        self.nrow = self.size.height
         await self.send_queue.put(["set_size", self.nrow, self.ncol])
         # self._screen.resize(self.nrow, self.ncol)
 
@@ -391,8 +390,6 @@ class TerminalEmulator:
 
         It maybe has to be implemented somewhere at the CancelledError.
         """
-        self.ncol = 80
-        self.nrow = 24
         self.data_or_disconnect = None
         self.run_task: asyncio.Task = None
         self.send_task: asyncio.Task = None
