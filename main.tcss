@@ -9,6 +9,20 @@ Terminal {
     background: black 0%;
 }
 
+PopupScreen {
+    align: center middle;
+}
+
+DashBoard, Conda, Pip, HuggingFace, Papers {
+    width: 60%;
+    height: 60%;
+}
+
+CPU, GPU, Mem, Disk {
+    height: 40%;
+    border: solid #9ACBD0;
+}
+
 RichLog {
     height: 20;
     width: 100%;
@@ -20,40 +34,17 @@ RichLog {
     width: 100%;
 }
 
-DashBoard {
-    width: 60%;
-    height: 60%;
-}
-
 #basic_info {
     height: 40%;
     border: solid #9ACBD0;
 }
 
-CPU {
-    height: 40%;
-    border: solid #9ACBD0;
-}
-GPU {
-    height: 40%;
-    border: solid #9ACBD0;
-}
-Mem {
-    height: 40%;
-    border: solid #9ACBD0;
-}
-Disk {
-    height: 40%;
-    border: solid #9ACBD0;
-}
 MemChart {
     height: 4;
 }
-
 #gpu_label {
     width: 100%;
 }
-
 #conda_env_listview {
     margin: 1;
 }
@@ -114,10 +105,6 @@ QuitScreen {
     height: 1fr;
     width: 1fr;
     content-align: center middle;
-}
-
-PopupScreen {
-    align: center middle;
 }
 
 
