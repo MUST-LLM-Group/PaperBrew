@@ -28,18 +28,19 @@ class PaperReproducer(App):
         yield Header()
         yield Footer()
 
-        with TabbedContent():
-            with TabPane("DashBoard", id="dashboard"):
-                yield DashBoard()
-            with TabPane("Conda", id="conda"):
-                yield Conda()
-            with TabPane("Pip", id="pip"):
-                yield Pip()
-            with TabPane("HuggingFace", id="huggingface"):
-                yield HuggingFace()
-            with TabPane("Papers", id="papers"):
-                yield Papers()
-        yield Terminal(command="bash", id="terminal_bash")
+        # with TabbedContent():
+        #     with TabPane("DashBoard", id="dashboard"):
+        #         yield DashBoard()
+        #     with TabPane("Conda", id="conda"):
+        #         yield Conda()
+        #     with TabPane("Pip", id="pip"):
+        #         yield Pip()
+        #     with TabPane("HuggingFace", id="huggingface"):
+        #         yield HuggingFace()
+        #     with TabPane("Papers", id="papers"):
+        #         yield Papers()
+
+        yield Terminal(command=f"bash", id="terminal_bash")
 
     def on_ready(self) -> None:
         terminal_bash: Terminal = self.query_one("#terminal_bash")
