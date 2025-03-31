@@ -139,6 +139,8 @@ class Pip(VerticalScroll):
                 await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.aliyun.com/pypi/simple'])
             elif pip_mirror == "华为云":
                 await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.huaweicloud.com/pypi/simple'])
+            else:
+                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://pypi.org/simple'])
 
 
 
