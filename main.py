@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from textual import events, log
 from textual.app import ComposeResult, App
 from textual.containers import HorizontalGroup, Grid

@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from textual.app import ComposeResult
-from textual.containers import Container
+from textual.containers import Container, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Static
 from textual_terminal import Terminal
@@ -10,7 +12,7 @@ from gpu import GPU
 from mem import Mem
 
 
-class DashBoard(Container):
+class DashBoard(VerticalScroll):
 
     cpu_usage = reactive(0.0, recompose=True)
     gpu_usage = reactive(0.0)
