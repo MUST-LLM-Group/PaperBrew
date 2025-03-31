@@ -42,15 +42,17 @@ class PaperReproducer(App):
 
         yield Terminal(command=f"bash", id="terminal_bash")
 
+    async def send_message(self, message: str) -> None:
+        terminal_bash: Terminal = self.query_one("#terminal_bash")
+        await terminal_bash.send_queue.put(["stdin", message])
+
+
     async def on_ready(self) -> None:
         terminal_bash: Terminal = self.query_one("#terminal_bash")
         terminal_bash.start()
-        await terminal_bash.send_queue.put(["stdin", 'a'])
-        await terminal_bash.send_queue.put(["stdin", 'a'])
-        await terminal_bash.send_queue.put(["stdin", 'a'])
-        await terminal_bash.send_queue.put(["stdin", 'a'])
-        await terminal_bash.send_queue.put(["stdin", 'a'])
-        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await self.send_message("ls\n")
+        await self.send_message("export HF_ENDPOINT=https://hf-mirror.com\n")
+        await self.send_message("echo $HF_ENDPOINT\n")
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
