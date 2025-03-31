@@ -24,8 +24,8 @@ class PipPackageListView(Widget):
 class Pip(VerticalScroll):
     pip_version = reactive("", recompose=True)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, id: str | None= None):
+        super().__init__(id = id)
         pip_version_raw = self.run_command(["pip", "--version"])
         self.pip_version = pip_version_raw.split(" ")[1]
         self.selected_env = Select.BLANK

@@ -2,7 +2,13 @@ from textual import events, log
 from textual.app import ComposeResult, App
 from textual.containers import HorizontalGroup, Grid
 from textual.screen import ModalScreen
+from textual.widget import Widget
 from textual.widgets import Header, Footer, Button, Label
+
+from dashboard import DashBoard
+from huggingface import HuggingFace
+from papers import Papers
+from pip import Pip
 from textual_terminal import Terminal
 
 from conda import Conda
@@ -25,15 +31,19 @@ class QuitScreen(ModalScreen[bool]):  # (1)!
             self.dismiss(False)
 
 
-class CondaScreen(ModalScreen[bool]):
+class PopupScreen(ModalScreen[bool]):
+
+    def __init__(self, widget: Widget):
+        super().__init__()
+        self.widget = widget
 
     def compose(self) -> ComposeResult:
-        yield Conda(id="conda")
+        yield self.widget
 
     def on_click(self, event: events.Click) -> None:
         # check if mouse click outside the modal
         # then dismiss the modal
-        conda = self.query_one("#conda")
+        conda = self.query_one(f"#{self.widget.id}")
         if not conda.is_mouse_over:
             self.dismiss(True)
 
@@ -64,8 +74,17 @@ class PaperReproducer(App):
         pass
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "conda_button":
-            await self.push_screen(CondaScreen())
+        if event.button.id == "dashboard_button":
+            await self.push_screen(PopupScreen(DashBoard(id="dashboard")))
+        elif event.button.id == "conda_button":
+            await self.push_screen(PopupScreen(Conda(id="conda")))
+        elif event.button.id == "pip_button":
+            await self.push_screen(PopupScreen(Pip(id="pip")))
+        elif event.button.id == "huggingface_button":
+            await self.push_screen(PopupScreen(HuggingFace(id="huggingface")))
+        elif event.button.id == "papers_button":
+            await self.push_screen(PopupScreen(Papers(id="papers")))
+
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
@@ -105,11 +124,15 @@ class PaperReproducer(App):
         await self.send_message("export HF_ENDPOINT=https://hf-mirror.com\n")
         await self.send_message("echo $HF_ENDPOINT\n")
 
-    def action_toggle_dark(self) -> None:
+    async def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
         self.theme = (
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
+        await self.send_message("echo $HF_ENDPOINT\n")
+
+    async def on_hugging_face_send_command(self, event: HuggingFace.SendCommand) -> None:
+        await self.send_message("echo $HF_ENDPOINT\n")
 
 
 if __name__ == "__main__":

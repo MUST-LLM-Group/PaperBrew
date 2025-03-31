@@ -1,12 +1,12 @@
 import os
 
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup
-from textual.widgets import RichLog, Button, ListView, Label, ListItem, Select
-from rich.syntax import Syntax
+from textual.message import Message
+from textual.widgets import RichLog, Button, Label, Select
 import asyncio
 import subprocess
-from textual.layouts.grid import GridLayout
 from textual.reactive import reactive
 
 
@@ -75,10 +75,22 @@ class HuggingFace(VerticalScroll):
         #     await self._install_miniconda3_linux()
         pass
 
-    def on_list_view_selected(self, event: ListView.Selected):
-        # self.text_log.write(f"Selected: !!!!")
-        # self.conda_prefix = self._get_conda_env()
-        pass
+
+    class SendCommand(Message):
+
+        def __init__(self, command: str) -> None:
+            super().__init__()
+            self.command = command
+
+    @on(Select.Changed)
+    async def select_changed(self, event: Select.Changed) -> None:
+        # 判断id
+        if event.select.id == "pip_mirrors_select":
+            self.selected_mirror = event.value
+            if self.selected_mirror == Select.BLANK:
+                return
+            elif self.selected_mirror == "hf-mirror.com":
+                self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com"))
 
     def compose(self) -> ComposeResult:
         # 读取多级环境变量文件，寻找是否有对hf_mirror的赋值
