@@ -16,6 +16,7 @@ PopupScreen {
 DashBoard, Conda, Pip, HuggingFace, Papers {
     width: 60%;
     height: 60%;
+    border: thick $background 80%;
 }
 
 CPU, GPU, Mem, Disk {
