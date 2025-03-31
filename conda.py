@@ -116,8 +116,7 @@ class Conda(VerticalScroll):
 
     def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        if self.conda_prefix is not None:
-            self.text_log = self.query_one("#text_log")
+        self.text_log = self.query_one("#text_log")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.label == "Install MiniConda3":
