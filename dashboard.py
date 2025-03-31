@@ -16,8 +16,13 @@ class DashBoard(Container):
     gpu_usage = reactive(0.0)
 
     # on_mount
-    def __init__(self):
-        super().__init__()
+    def __init__(
+            self,
+            name: str | None = None,
+            id: str | None = None,
+            classes: str | None = None,
+    ):
+        super().__init__(name=name, id=id, classes=classes)
         self.os_type = self._get_os_type()
         self.cpu_arch = self._get_cpu_arch()
         self.hostname = self._get_hostname()

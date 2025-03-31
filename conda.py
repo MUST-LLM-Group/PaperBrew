@@ -17,9 +17,9 @@ class Conda(VerticalScroll):
     conda_info_root = reactive("")
     conda_envs = reactive([])
 
-    def __init__(self):
+    def __init__(self, id: str = None):
         # 调用父类的构造方法，确保父类的初始化逻辑也被执行
-        super().__init__()
+        super().__init__(id=id)
         # 调用当前类的私有方法 _get_conda_env() 来获取 conda 环境的前缀路径
         # 并将结果赋值给实例变量 self.conda_prefix
         self.conda_info_root = None

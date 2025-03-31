@@ -58,10 +58,8 @@ class CPU(Widget):
         return platform.system().lower()
 
     async def get_cpu_usage(self, interval):
-        # end_time = asyncio.get_event_loop().time() + duration
-        # while asyncio.get_event_loop().time() < end_time:
         while True:
-            cpu_usage = psutil.cpu_percent(interval=1)
+            cpu_usage = psutil.cpu_percent()
             # self.cpu_usage = cpu_usage
             self.braille_stream.add_value(cpu_usage)
             val_string = f" CPU Usage {cpu_usage}% "
