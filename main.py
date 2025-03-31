@@ -40,7 +40,7 @@ class PaperReproducer(App):
         #     with TabPane("Papers", id="papers"):
         #         yield Papers()
 
-        yield Terminal(command=f"bash", id="terminal_bash")
+        yield Terminal(command=f"bash -rcfile ~/.bashrc", id="terminal_bash")
 
     async def send_message(self, message: str) -> None:
         terminal_bash: Terminal = self.query_one("#terminal_bash")
