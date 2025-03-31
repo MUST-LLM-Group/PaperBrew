@@ -42,9 +42,15 @@ class PaperReproducer(App):
 
         yield Terminal(command=f"bash", id="terminal_bash")
 
-    def on_ready(self) -> None:
+    async def on_ready(self) -> None:
         terminal_bash: Terminal = self.query_one("#terminal_bash")
         terminal_bash.start()
+        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await terminal_bash.send_queue.put(["stdin", 'a'])
+        await terminal_bash.send_queue.put(["stdin", 'a'])
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
