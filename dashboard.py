@@ -58,6 +58,11 @@ class DashBoard(Container):
         return platform.system().lower()
 
     def compose(self) -> ComposeResult:
+
+        gpu = GPU()
+        gpu.border_title = "GPU"
+        yield gpu
+
         is_autodl = True if self.hostname.startswith("autodl") else False
         status_str = f"""OS: {self.os_type}
 Arch: {self.cpu_arch}
@@ -78,10 +83,6 @@ HF_HOME: {self.env_hf_home}
         mem = Mem()
         mem.border_title = "MEM"
         yield Mem()
-
-        gpu = GPU()
-        gpu.border_title = "GPU"
-        yield gpu
 
         disk = Disk()
         disk.border_title = "DISK"
