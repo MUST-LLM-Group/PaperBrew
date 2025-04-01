@@ -5,7 +5,7 @@ from typing import List
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup
+from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup, Container
 from textual.widget import Widget
 from textual.widgets import Button, ListView, Label, ListItem, Select, Input, Rule, Log
 from rich.syntax import Syntax
@@ -181,16 +181,17 @@ class Pip(VerticalScroll):
             pip_mirror = "官方源(国外)"
 
         yield HorizontalGroup(
-            Label("Pip Mirror(Global)", id="pip_mirror_label"),
+            Container(Label("Pip Mirror(Global)", id="pip_mirror_label"),
+                      classes="text_box"),
             Select.from_values(["官方源(国外)", "清华源", "中科大", "阿里云", "华为云"], value=pip_mirror, id="pip_mirrors_select"),
+            id="pip_horizontal_group"
         )
-
-        yield Rule()
 
         conda_info_root = self.run_command(['conda', 'info', '--root'])
         conda_envs = [f for f in os.listdir(conda_info_root + "/envs") if not f.startswith('.')]
         yield HorizontalGroup(
-            Label("Conda Env", id="conda_env_label"),
+            Container(Label("Conda Env", id="conda_env_label"),
+                      classes="text_box"),
             Select({(v, v) for v in conda_envs}, id="conda_env_select", value=self.selected_env),
         )
 

@@ -104,17 +104,6 @@ class PaperBrew(App):
             Button("HuggingFace", classes="main_button", id="huggingface_button"),
             Button("Papers", classes="main_button", id="papers_button"),
         )
-        # with TabbedContent():
-        #     with TabPane("DashBoard", id="dashboard"):
-        #         yield DashBoard()
-        #     with TabPane("Conda", id="conda"):
-        #         yield Conda()
-        #     with TabPane("Pip", id="pip"):
-        #         yield Pip()
-        #     with TabPane("HuggingFace", id="huggingface"):
-        #         yield HuggingFace()
-        #     with TabPane("Papers", id="papers"):
-        #         yield Papers()
 
         yield Terminal(command=f"bash -rcfile ~/.bashrc -i -l", id="terminal_bash")
 

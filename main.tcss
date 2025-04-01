@@ -93,8 +93,16 @@ MemChart {
     width: 16;
 }
 
+#pip_horizontal_group {
+    height: 3;
+}
+
+#pip_install_package_name_input {
+    width: 30%;
+}
+
 #pip_mirror_label {
-    align: left bottom;
+    align: left middle;
 }
 
 #pip_install_package_name_input {
