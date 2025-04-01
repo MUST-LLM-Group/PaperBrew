@@ -9,7 +9,7 @@ Download the latest [binary release](https://github.com/MUST-LLM-Group/PaperBrew
 ## Development
 Python 3.7+ is required.
 ```
-pip install textual textual-dev psutil pyte
+pip install textual textual-dev psutil pyte pipreqs
 ```
 
 ```
