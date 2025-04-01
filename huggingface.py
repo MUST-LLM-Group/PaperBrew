@@ -2,9 +2,9 @@ import os
 
 from textual import on
 from textual.app import ComposeResult
-from textual.containers import VerticalScroll, HorizontalGroup
+from textual.containers import VerticalScroll, HorizontalGroup, VerticalGroup, Container
 from textual.message import Message
-from textual.widgets import RichLog, Button, Label, Select, Input, Rule
+from textual.widgets import Button, Label, Select, Input, Rule
 import asyncio
 import subprocess
 from textual.reactive import reactive
@@ -12,37 +12,6 @@ from textual.reactive import reactive
 
 class HuggingFace(VerticalScroll):
     pip_version = reactive("", recompose=True)
-
-
-    async def run_command_richlog(self, command):
-        # 打印command
-        self.text_log.write(f"- {' '.join(command)}")
-
-        # 创建子进程，并设置管道以捕获标准输出
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-
-        # 读取子进程的标准输出和标准错误输出
-        while True:
-            # 读取一行输出
-            line = await process.stdout.readline()
-            if not line:
-                break
-            # 解码并打印输出
-            self.text_log.write({line.decode().strip()})
-
-        # 等待子进程结束
-        await process.wait()
-        # 检查子进程退出码
-        if process.returncode == 0:
-            self.text_log.write("\n")
-        else:
-            error = await process.stderr.read()
-            self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
-
 
     def run_command(self, command):
         """
@@ -66,14 +35,15 @@ class HuggingFace(VerticalScroll):
 
     def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        self.text_log = self.query_one(RichLog)
+        pass
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         # if event.button.label == "Install MiniConda3":
         #     # disable button
         #     event.button.disabled = True
         #     await self._install_miniconda3_linux()
-        pass
+        if event.button.id == "hf_home_button":
+            self.post_message(self.SendCommand(f"export HF_HOME={self.query_one("#hf_home_input").value}\n"))
 
 
     class SendCommand(Message):
@@ -93,25 +63,22 @@ class HuggingFace(VerticalScroll):
                 self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com\n"))
                 self.post_message(self.SendCommand("echo $HF_ENDPOINT\n"))
 
-    async def on_input_changed(self, event: Input.Changed) -> None:
-        if event.input.id == "hf_home_input":
-            self.post_message(self.SendCommand(f"export HF_HOME={event.input.value}\n"))
-
     def compose(self) -> ComposeResult:
 
         yield Label("Notice: We only set envs for this running shell, it won't affect your system envs.", classes="title")
 
         hf_mirror = os.getenv("HF_MIRROR", "None")
         yield HorizontalGroup(
-            Label("HuggingFace Mirror", classes="title"),
+            Container(Label("HuggingFace Mirror", id="hf_mirror_label"),classes="text_box"),
             Select.from_values(["None", "hf-mirror.com"], value=hf_mirror,
                                id="hf_mirrors_select"),
         )
-        Rule()
         hf_home = os.getenv("HF_HOME", "None")
         yield HorizontalGroup(
-            Label("HuggingFace HOME", classes="title"),
+            Container(
+                Label("HuggingFace HOME", id="hf_home_label"),
+                classes="text_box"
+            ),
             Input(value=hf_home, id="hf_home_input"),
+            Button("Set", classes="title", id="hf_home_button"),
         )
-
-        yield RichLog(highlight=True, markup=True)

@@ -1,6 +1,27 @@
-Button {
+.text_box {
+    height: 100%;
+    width: auto;
+    align: left middle;
+}
+
+.box {
+    height: 100%;
+    border: solid #9ACBD0;
+}
+
+.main_button {
     width: 16;
     border: solid #9ACBD0;
+}
+
+#magic_button {
+    width: 16;
+    background: #A32449;
+    border: solid #9ACBD0;
+}
+
+#magic_button:hover {
+    background: #9ACBD0 0%;
 }
 
 Terminal {
@@ -13,10 +34,17 @@ PopupScreen {
     align: center middle;
 }
 
-DashBoard, Conda, Pip, HuggingFace, Papers {
+Magic, DashBoard, Conda, Pip, Papers {
     width: 60%;
     height: 60%;
-    border: thick $background 80%;
+    border: ascii #9ACBD0 100%;
+}
+
+HuggingFace {
+    width: 60%;
+    height: 40%;
+    background: black 0%;
+    border: ascii #9ACBD0 100%;
 }
 
 CPU, GPU, Mem, Disk {
@@ -24,15 +52,21 @@ CPU, GPU, Mem, Disk {
     border: solid #9ACBD0;
 }
 
-RichLog {
-    height: 20;
+#magic_rich_log {
     width: 100%;
-    background: black 0%;
+    height: 100%;
+    background: black 10%;
+}
+
+#conda_rich_log_group, #pip_rich_log_group {
+    height: 10;
+    border: solid #9ACBD0;
 }
 
 #conda_rich_log, #pip_rich_log {
-    height: auto;
+    height: 8;
     width: 100%;
+    background: black 0%;
 }
 
 #basic_info {
@@ -71,10 +105,17 @@ MemChart {
     height: 30%;
 }
 
-.box {
-    height: 100%;
-    border: solid #9ACBD0;
+#hf_mirror_label, #hf_home_label {
+    width: 18;
 }
+
+#hf_home_input {
+    width: 40%;
+}
+#hf_home_button {
+    width: auto;
+}
+
 
 .disk_label_left {
     width: 30%;
@@ -108,6 +149,4 @@ QuitScreen {
     width: 1fr;
     content-align: center middle;
 }
-
-
 

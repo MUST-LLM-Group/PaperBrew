@@ -23,7 +23,7 @@ class PipPackageListView(Widget):
         yield pip_packages_listview
 
 
-class Pip(VerticalGroup):
+class Pip(VerticalScroll):
     pip_version = reactive("", recompose=True)
 
     def __init__(self, id: str | None= None):
@@ -100,6 +100,9 @@ class Pip(VerticalGroup):
         package_name = self.query_one(Input).value
         if event.button.id == "pip_install_button":
             if package_name != "":
+                self.query_one("#pip_install_button").disabled = True
+                self.query_one("#pip_uninstall_button").disabled = True
+
                 # get pip mirrors
                 pip_mirror = self.query_one("#pip_mirrors_select").value
                 if pip_mirror == "清华源":
@@ -112,6 +115,9 @@ class Pip(VerticalGroup):
                     await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', package_name])
                 # refresh pip package list
                 await self.refresh_pip_packages(self.selected_env)
+
+                self.query_one("#pip_install_button").disabled = False
+                self.query_one("#pip_uninstall_button").disabled = False
 
         if event.button.id == "pip_uninstall_button":
             if package_name != "":
@@ -189,7 +195,6 @@ class Pip(VerticalGroup):
         )
 
 
-
         yield self.pip_package_list_view
 
         yield HorizontalGroup(
@@ -201,4 +206,5 @@ class Pip(VerticalGroup):
         yield VerticalGroup(
             Label("Console Log"),
             RichLog(highlight=True, markup=True, id="pip_rich_log"),
+            id="pip_rich_log_group"
         )

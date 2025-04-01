@@ -9,6 +9,7 @@ from textual.widgets import Header, Footer, Button, Label
 
 from dashboard import DashBoard
 from huggingface import HuggingFace
+from magic import Magic
 from papers import Papers
 from pip import Pip
 from textual_terminal import Terminal
@@ -50,7 +51,7 @@ class PopupScreen(ModalScreen[bool]):
             self.dismiss(True)
 
 
-class PaperReproducer(App):
+class PaperBrew(App):
     """Paper reproducer app."""
 
     CSS_PATH = "main.tcss"
@@ -76,7 +77,9 @@ class PaperReproducer(App):
         pass
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "dashboard_button":
+        if event.button.id == "magic_button":
+            await self.push_screen(PopupScreen(Magic(id="magic")))
+        elif event.button.id == "dashboard_button":
             await self.push_screen(PopupScreen(DashBoard(id="dashboard")))
         elif event.button.id == "conda_button":
             await self.push_screen(PopupScreen(Conda(id="conda")))
@@ -94,11 +97,12 @@ class PaperReproducer(App):
         yield Footer()
 
         yield HorizontalGroup(
-            Button("DashBoard", id="dashboard_button"),
-            Button("Conda", id="conda_button"),
-            Button("Pip", id="pip_button"),
-            Button("HuggingFace", id="huggingface_button"),
-            Button("Papers", id="papers_button"),
+            Button("Magic Button", id="magic_button"),
+            Button("DashBoard", classes="main_button"),
+            Button("Conda", classes="main_button"),
+            Button("Pip", classes="main_button"),
+            Button("HuggingFace", classes="main_button"),
+            Button("Papers", classes="main_button"),
         )
         # with TabbedContent():
         #     with TabPane("DashBoard", id="dashboard"):
@@ -122,9 +126,9 @@ class PaperReproducer(App):
     async def on_ready(self) -> None:
         terminal_bash: Terminal = self.query_one("#terminal_bash")
         terminal_bash.start()
-        await self.send_message("ls\n")
-        await self.send_message("export HF_ENDPOINT=https://hf-mirror.com\n")
-        await self.send_message("echo $HF_ENDPOINT\n")
+        # await self.send_message("ls\n")
+        # await self.send_message("export HF_ENDPOINT=https://hf-mirror.com\n")
+        # await self.send_message("echo $HF_ENDPOINT\n")
 
     async def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
@@ -137,6 +141,6 @@ class PaperReproducer(App):
 
 
 if __name__ == "__main__":
-    app = PaperReproducer()
+    app = PaperBrew()
     # app = DashBoard()
     app.run()

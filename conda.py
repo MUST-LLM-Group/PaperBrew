@@ -200,4 +200,5 @@ class Conda(VerticalScroll):
         yield VerticalGroup(
             Label("Console Log"),
             RichLog(id="conda_rich_log"),
+            id="conda_rich_log_group"
         )
