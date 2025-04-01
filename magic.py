@@ -47,7 +47,7 @@ class Magic(VerticalScroll):
     ]
 
     async def start(self):
-        log:Log = self.query_one("#magic_log")
+        log: Log = self.query_one("#magic_log")
         self.text_log = log
         log.write_line("Starting Magic...")
         log.write_line("正在获取Git仓库信息")
@@ -64,10 +64,9 @@ class Magic(VerticalScroll):
         log.write_line("项目代码分析完成...")
 
 
-
-
     def on_mount(self, event: events.Mount) -> None:
-        self.call_after_refresh(self.start)
+        # self.call_after_refresh(self.start)
+        self.call_later(self.start)
 
 
     def compose(self) -> ComposeResult:
