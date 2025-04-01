@@ -158,6 +158,7 @@ class Conda(VerticalScroll):
 
     async def update_conda_envs(self):
         envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
+        envs.sort()
         # use conda run -n myenv python --version to get python version
         self.conda_envs = []
         for env in envs:
