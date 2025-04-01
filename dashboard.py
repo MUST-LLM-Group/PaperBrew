@@ -109,5 +109,3 @@ HF_HOME: {self.env_hf_home}
     async def on_mouse_move(self, event: events.MouseMove) -> None:
         if self.grabbed:
             self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)
-        self.refresh()
-        # await self.recompose()

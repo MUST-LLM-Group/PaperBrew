@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import List
 
-from textual import on
+from textual import on, events
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup, Container
 from textual.widget import Widget
@@ -32,6 +32,7 @@ class Pip(VerticalScroll):
         self.pip_version = pip_version_raw.split(" ")[1]
         self.selected_env = Select.BLANK
         self.pip_package_list_view = PipPackageListView(id="pip_package_list_view")
+        self.grabbed = False
 
 
     async def run_command_log(self, command, should_send_to_log: bool = True):
@@ -210,3 +211,16 @@ class Pip(VerticalScroll):
             Log(id="pip_log"),
             id="pip_log_group"
         )
+
+    async def on_mouse_down(self, event: events.MouseDown) -> None:
+        self.grabbed = True
+        event.stop()
+
+    async def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self.grabbed:
+            self.grabbed = False
+        event.stop()
+
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.grabbed:
+            self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)

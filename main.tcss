@@ -30,6 +30,10 @@ Terminal {
     background: black 0%;
 }
 
+PopupScreen {
+    align: center middle;
+}
+
 Magic, DashBoard, Conda, Pip, Papers {
     width: 60%;
     height: 60%;

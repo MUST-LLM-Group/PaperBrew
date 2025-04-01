@@ -1,6 +1,6 @@
 import os
 
-from textual import on
+from textual import on, events
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup, VerticalGroup, Container
 from textual.message import Message
@@ -12,6 +12,10 @@ from textual.reactive import reactive
 
 class HuggingFace(VerticalScroll):
     pip_version = reactive("", recompose=True)
+
+    def __init__(self, id: str = None):
+        super().__init__(id=id)
+        self.grabbed = False
 
     def run_command(self, command):
         """
@@ -86,3 +90,16 @@ class HuggingFace(VerticalScroll):
             Input(value=hf_home, id="hf_home_input"),
             Button("Set", classes="title", id="hf_home_button"),
         )
+
+    async def on_mouse_down(self, event: events.MouseDown) -> None:
+        self.grabbed = True
+        event.stop()
+
+    async def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self.grabbed:
+            self.grabbed = False
+        event.stop()
+
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.grabbed:
+            self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)

@@ -2,7 +2,7 @@ import os
 from platform import python_version
 from typing import List
 
-from textual import on
+from textual import on, events
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ListView, Label, ListItem, Input, Select, Log
@@ -29,6 +29,8 @@ class Conda(VerticalScroll):
 
         self.text_log = None
         self.conda_prefix = self._get_conda_prefix()
+
+        self.grabbed = False
 
     async def _install_miniconda3_linux(self):
         self.text_log.write_line("Installing Miniconda3 ...")
@@ -204,3 +206,16 @@ class Conda(VerticalScroll):
             Log(id="conda_log"),
             id="conda_log_group"
         )
+
+    async def on_mouse_down(self, event: events.MouseDown) -> None:
+        self.grabbed = True
+        event.stop()
+
+    async def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self.grabbed:
+            self.grabbed = False
+        event.stop()
+
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.grabbed:
+            self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)

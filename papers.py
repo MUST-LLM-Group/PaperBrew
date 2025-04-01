@@ -1,5 +1,6 @@
 import os
 
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.widgets import Button, ListView, Label, ListItem, Input, Log
@@ -12,6 +13,10 @@ from textual.reactive import reactive
 
 class Papers(VerticalScroll):
     pip_version = reactive("", recompose=True)
+
+    def __init__(self, id: str = None):
+        super().__init__(id=id)
+        self.grabbed = False
 
 
     async def run_command_log(self, command):
@@ -84,3 +89,16 @@ class Papers(VerticalScroll):
         yield Input(placeholder="Search by arxiv id, GitHub repo or title", id="search-input")
 
         yield Log(highlight=True)
+
+    async def on_mouse_down(self, event: events.MouseDown) -> None:
+        self.grabbed = True
+        event.stop()
+
+    async def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self.grabbed:
+            self.grabbed = False
+        event.stop()
+
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.grabbed:
+            self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)
