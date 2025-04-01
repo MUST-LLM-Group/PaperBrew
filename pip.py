@@ -189,6 +189,7 @@ class Pip(VerticalScroll):
 
         conda_info_root = self.run_command(['conda', 'info', '--root'])
         conda_envs = [f for f in os.listdir(conda_info_root + "/envs") if not f.startswith('.')]
+        conda_envs.sort()
         yield HorizontalGroup(
             Container(Label("Conda Env", id="conda_env_label"),
                       classes="text_box"),
