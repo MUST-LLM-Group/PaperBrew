@@ -1,4 +1,5 @@
 import os
+from platform import python_version
 from typing import List
 
 from textual import on
@@ -24,8 +25,7 @@ class Conda(VerticalScroll):
         # 并将结果赋值给实例变量 self.conda_prefix
         self.conda_info_root = None
         self.update_conda_info_root()
-        self.conda_envs = None
-        self.update_conda_envs()
+        self.conda_envs = []
 
         self.text_log = None
         self.conda_prefix = self._get_conda_prefix()
@@ -91,7 +91,7 @@ class Conda(VerticalScroll):
             self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
 
 
-    def run_command(self, command):
+    def run_command(self, command: List[str]) -> str:
         """
         执行指定的命令并返回输出。
 
@@ -114,9 +114,12 @@ class Conda(VerticalScroll):
         import os
         return os.getenv("CONDA_PREFIX")
 
-    def on_mount(self) -> None:
+
+    async def on_mount(self) -> None:
         """Called  when the DOM is ready."""
         self.text_log = self.query_one("#text_log")
+        self.call_after_refresh(self.update_conda_envs)
+        self.call_after_refresh(self.update_conda_env_listview)
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.label == "Install MiniConda3":
@@ -141,7 +144,7 @@ class Conda(VerticalScroll):
     async def update_conda_env_listview(self):
         await self.query_one(ListView).clear()
         for conda_env in self.conda_envs:
-            await self.query_one(ListView).append(ListItem(Label(conda_env)))
+            await self.query_one(ListView).append(ListItem(Label(f"{conda_env['name']} - {conda_env['python_version']}")))
         self.query_one(ListView).refresh()
 
     def on_list_view_selected(self, event: ListView.Selected):
@@ -153,8 +156,26 @@ class Conda(VerticalScroll):
         # self.title = str(event.value)
         pass
 
-    def update_conda_envs(self):
-        self.conda_envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
+    async def update_conda_envs(self):
+        envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
+        # use conda run -n myenv python --version to get python version
+        self.conda_envs = []
+        for env in envs:
+            # 这种方法太慢了！
+            python_version = self.run_command([f'{self.conda_info_root}/bin/conda', 'run', '-n', env, 'python', '--version'])
+
+            # 通过 ls envs/env_name/conda-meta/python-3.12.9-*.json文件 来判断python版本为3.12
+            files = os.listdir(self.conda_info_root + "/envs/" + env + "/conda-meta")
+            # 正则表达式匹配 'python-版本号' 格式
+            pattern = r'python-(\d+\.\d+\.\d+)'
+            # 提取版本号
+            import re
+            version_numbers = [re.search(pattern, file).group(1) for file in files if re.search(pattern, file)]
+
+            self.conda_envs.append({
+                "name": f"{env}",
+                "python_version" : version_numbers[0] if version_numbers else ""
+            })
 
     def update_conda_info_root(self):
         self.conda_info_root = self.run_command(['conda', 'info', '--root'])
@@ -164,7 +185,7 @@ class Conda(VerticalScroll):
         conda_info_root_label = Label(f"CONDA_ROOT: {self.conda_info_root}" + f"""\nCONDA_PREFIX: {self.conda_prefix}""", id="conda_info_root_label")
         yield conda_info_root_label
 
-        listview = ListView(*[ListItem(Label(conda_env)) for conda_env in self.conda_envs], id="conda_env_listview")
+        listview = ListView(*[ListItem(Label(f"{conda_env['name']} - {conda_env['python_version']}")) for conda_env in self.conda_envs], id="conda_env_listview")
         yield listview
 
         if self.conda_prefix is None:
