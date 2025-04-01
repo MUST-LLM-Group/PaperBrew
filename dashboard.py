@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from textual import events
 from textual.app import ComposeResult
-from textual.containers import Container, VerticalScroll
+from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Static
-from textual_terminal import Terminal
 
 from cpu import CPU
 from disk import Disk
@@ -31,6 +31,7 @@ class DashBoard(VerticalScroll):
         self.python_version = self._get_python_version()
         self.env_hf_endpoint = self._get_env_hf_endpoint()
         self.env_hf_home = self._get_env_hf_home()
+        self.grabbed = False
 
 
 
@@ -94,3 +95,19 @@ HF_HOME: {self.env_hf_home}
         # hf = Static(f"HugginFace", classes="box", id="hf")
         # hf.border_title = "HugginFace"
         # yield hf
+
+
+    async def on_mouse_down(self, event: events.MouseDown) -> None:
+        self.grabbed = True
+        event.stop()
+
+    async def on_mouse_up(self, event: events.MouseUp) -> None:
+        if self.grabbed:
+            self.grabbed = False
+        event.stop()
+
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.grabbed:
+            self.styles.offset = (self.offset.x + event.delta_x, self.offset.y + event.delta_y)
+        self.refresh()
+        # await self.recompose()

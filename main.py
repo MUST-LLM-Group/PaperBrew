@@ -50,10 +50,7 @@ class PopupScreen(ModalScreen[bool]):
         if not conda.is_mouse_over:
             self.dismiss(True)
 
-    async def on_mouse_move(self, event: events.MouseMove) -> None:
-        self.widget.styles.offset = (self.widget.offset.x + event.delta_x, self.widget.offset.y + event.delta_y)
-        self.refresh()
-        # await self.recompose()
+
 
 
 
