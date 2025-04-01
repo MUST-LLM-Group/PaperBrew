@@ -19,3 +19,4 @@ pyinstaller main.py --add-data "main.tcss:."
 ## TODO List
 - [x] Add a `conda` tab to manage conda environments.
 - [x] Add a `pip` tab to install/uninstall packages.
+- [ ] Reproduce any paper on arXiv with one click.
