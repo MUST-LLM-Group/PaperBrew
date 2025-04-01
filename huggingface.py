@@ -4,7 +4,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup
 from textual.message import Message
-from textual.widgets import RichLog, Button, Label, Select
+from textual.widgets import RichLog, Button, Label, Select, Input, Rule
 import asyncio
 import subprocess
 from textual.reactive import reactive
@@ -85,20 +85,33 @@ class HuggingFace(VerticalScroll):
     @on(Select.Changed)
     async def select_changed(self, event: Select.Changed) -> None:
         # 判断id
-        if event.select.id == "pip_mirrors_select":
+        if event.select.id == "hf_mirrors_select":
             self.selected_mirror = event.value
             if self.selected_mirror == Select.BLANK:
                 return
             elif self.selected_mirror == "hf-mirror.com":
-                self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com"))
+                self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com\n"))
+                self.post_message(self.SendCommand("echo $HF_ENDPOINT\n"))
+
+    async def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id == "hf_home_input":
+            self.post_message(self.SendCommand(f"export HF_HOME={event.input.value}\n"))
 
     def compose(self) -> ComposeResult:
-        # 读取多级环境变量文件，寻找是否有对hf_mirror的赋值
+
+        yield Label("Notice: We only set envs for this running shell, it won't affect your system envs.", classes="title")
+
         hf_mirror = os.getenv("HF_MIRROR", "None")
         yield HorizontalGroup(
             Label("HuggingFace Mirror", classes="title"),
             Select.from_values(["None", "hf-mirror.com"], value=hf_mirror,
-                               id="pip_mirrors_select"),
+                               id="hf_mirrors_select"),
+        )
+        Rule()
+        hf_home = os.getenv("HF_HOME", "None")
+        yield HorizontalGroup(
+            Label("HuggingFace HOME", classes="title"),
+            Input(value=hf_home, id="hf_home_input"),
         )
 
         yield RichLog(highlight=True, markup=True)

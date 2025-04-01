@@ -131,10 +131,9 @@ class PaperReproducer(App):
         self.theme = (
             "textual-dark" if self.theme == "textual-light" else "textual-light"
         )
-        await self.send_message("echo $HF_ENDPOINT\n")
 
     async def on_hugging_face_send_command(self, event: HuggingFace.SendCommand) -> None:
-        await self.send_message("echo $HF_ENDPOINT\n")
+        await self.send_message(event.command)
 
 
 if __name__ == "__main__":
