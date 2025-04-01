@@ -30,8 +30,8 @@ RichLog {
     background: black 0%;
 }
 
-#pip_rich_log {
-    height: 20;
+#conda_rich_log, #pip_rich_log {
+    height: auto;
     width: 100%;
 }
 
@@ -48,6 +48,7 @@ MemChart {
 }
 #conda_env_listview {
     margin: 1;
+    height: 6;
 }
 
 #new_env_name_input {

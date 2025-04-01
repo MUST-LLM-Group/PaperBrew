@@ -117,7 +117,7 @@ class Conda(VerticalScroll):
 
     async def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        self.text_log = self.query_one("#text_log")
+        self.text_log = self.query_one("#conda_rich_log")
         self.call_after_refresh(self.update_conda_envs)
         self.call_after_refresh(self.update_conda_env_listview)
 
@@ -199,5 +199,5 @@ class Conda(VerticalScroll):
             )
         yield VerticalGroup(
             Label("Console Log"),
-            RichLog(id="text_log"),
+            RichLog(id="conda_rich_log"),
         )
