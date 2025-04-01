@@ -83,4 +83,4 @@ class Papers(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search by arxiv id, GitHub repo or title", id="search-input")
 
-        yield Log(highlight=True, markup=True)
+        yield Log(highlight=True)
