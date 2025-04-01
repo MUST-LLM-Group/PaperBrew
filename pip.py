@@ -23,7 +23,7 @@ class PipPackageListView(Widget):
         yield pip_packages_listview
 
 
-class Pip(VerticalScroll):
+class Pip(VerticalGroup):
     pip_version = reactive("", recompose=True)
 
     def __init__(self, id: str | None= None):
