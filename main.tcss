@@ -47,9 +47,23 @@ HuggingFace {
     border: ascii #9ACBD0 100%;
 }
 
-CPU, GPU, Mem, Disk {
-    height: 40%;
+GPU {
+    height: 8;
     border: solid #9ACBD0;
+}
+CPU {
+    height: 14;
+    border: solid #9ACBD0;
+}
+
+Mem, Disk {
+    height: 14;
+    border: solid #9ACBD0;
+}
+
+BrailleStream {
+    height: 16;
+    width: 100%;
 }
 
 #magic_log {
