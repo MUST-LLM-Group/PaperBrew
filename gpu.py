@@ -10,7 +10,7 @@ from textual.containers import Container
 from textual.reactive import reactive
 from textual.renderables.gradient import LinearGradient
 from textual.widget import Widget
-from textual.widgets import Static, RichLog, Label
+from textual.widgets import Static, Label, Log
 
 from braille_stream import BrailleStream
 
@@ -56,11 +56,10 @@ class GPU(Widget):
             # run nvidia-smi command
             result = subprocess.run(["nvidia-smi"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
             output = result.stdout
-            self.query_one(RichLog).clear()
-            self.query_one(RichLog).write(output)
+            self.query_one(Log).clear()
+            self.query_one(Log).write_line(output)
             await asyncio.sleep(interval)
 
     def compose(self) -> ComposeResult:
-        rich_log = RichLog()
-
-        yield rich_log
+        yield Log()
+        

@@ -2,7 +2,7 @@ import os
 
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
-from textual.widgets import RichLog, Button, ListView, Label, ListItem, Input
+from textual.widgets import Button, ListView, Label, ListItem, Input, Log
 from rich.syntax import Syntax
 import asyncio
 import subprocess
@@ -14,7 +14,7 @@ class Papers(VerticalScroll):
     pip_version = reactive("", recompose=True)
 
 
-    async def run_command_richlog(self, command):
+    async def run_command_log(self, command):
         # 打印command
         self.text_log.write(f"- {' '.join(command)}")
 
@@ -66,7 +66,7 @@ class Papers(VerticalScroll):
 
     def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        self.text_log = self.query_one(RichLog)
+        self.text_log = self.query_one(Log)
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         # if event.button.label == "Install MiniConda3":
@@ -83,4 +83,4 @@ class Papers(VerticalScroll):
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search by arxiv id, GitHub repo or title", id="search-input")
 
-        yield RichLog(highlight=True, markup=True)
+        yield Log(highlight=True, markup=True)

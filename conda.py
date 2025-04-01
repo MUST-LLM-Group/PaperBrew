@@ -5,7 +5,7 @@ from typing import List
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup, VerticalGroup
-from textual.widgets import RichLog, Button, ListView, Label, ListItem, Input, Select
+from textual.widgets import Button, ListView, Label, ListItem, Input, Select, Log
 from rich.syntax import Syntax
 import asyncio
 import subprocess
@@ -31,8 +31,8 @@ class Conda(VerticalScroll):
         self.conda_prefix = self._get_conda_prefix()
 
     async def _install_miniconda3_linux(self):
-        self.text_log.write("Installing Miniconda3 ...")
-        # await self.run_command_richlog(['ping', 'www.aibsd.com', '-c', '1000'])
+        self.text_log.write_line("Installing Miniconda3 ...")
+        # await self.run_command_log(['ping', 'www.aibsd.com', '-c', '1000'])
         home_dir = os.path.expanduser("~")
 
         import platform
@@ -44,7 +44,7 @@ class Conda(VerticalScroll):
         else:
             raise ValueError(f"Unsupported architecture: {machine}")
 
-        await self.run_command_richlog(['mkdir', '-p', f'{home_dir}/miniconda3'])
+        await self.run_command_log(['mkdir', '-p', f'{home_dir}/miniconda3'])
 
         import urllib.request
         # Downloading the Miniconda3 installer from the provided URL
@@ -53,17 +53,17 @@ class Conda(VerticalScroll):
         urllib.request.urlretrieve(url, destination)
 
         try:
-            # await self.run_command_richlog(['wget', 'https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh', '-O', f'{home_dir}/miniconda3/miniconda.sh'])
-            await self.run_command_richlog(['bash', f'{home_dir}/miniconda3/miniconda.sh', '-b', '-u', '-p', f'{home_dir}/miniconda3'])
-            await self.run_command_richlog(['rm', '-rf', f'{home_dir}/miniconda3/miniconda.sh'])
-            await self.run_command_richlog([f'{home_dir}/miniconda3/bin/conda', 'init', 'bash'])
-            await self.run_command_richlog([f'{home_dir}/miniconda3/bin/conda', 'init', 'zsh'])
+            # await self.run_command_log(['wget', 'https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh', '-O', f'{home_dir}/miniconda3/miniconda.sh'])
+            await self.run_command_log(['bash', f'{home_dir}/miniconda3/miniconda.sh', '-b', '-u', '-p', f'{home_dir}/miniconda3'])
+            await self.run_command_log(['rm', '-rf', f'{home_dir}/miniconda3/miniconda.sh'])
+            await self.run_command_log([f'{home_dir}/miniconda3/bin/conda', 'init', 'bash'])
+            await self.run_command_log([f'{home_dir}/miniconda3/bin/conda', 'init', 'zsh'])
         except:
             pass
 
-    async def run_command_richlog(self, command):
+    async def run_command_log(self, command):
         # 打印command
-        self.text_log.write(f"- {' '.join(command)}")
+        self.text_log.write_line(f"- {' '.join(command)}")
 
         # 创建子进程，并设置管道以捕获标准输出
         process = await asyncio.create_subprocess_exec(
@@ -79,16 +79,16 @@ class Conda(VerticalScroll):
             if not line:
                 break
             # 解码并打印输出
-            self.text_log.write(line.decode().strip())
+            self.text_log.write_line(line.decode().strip())
 
         # 等待子进程结束
         await process.wait()
         # 检查子进程退出码
         if process.returncode == 0:
-            self.text_log.write("\n")
+            self.text_log.write_line("\n")
         else:
             error = await process.stderr.read()
-            self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
+            self.text_log.write_line(f"Command failed with error: {error.decode().strip()}\n\n")
 
 
     def run_command(self, command: List[str]) -> str:
@@ -117,7 +117,7 @@ class Conda(VerticalScroll):
 
     async def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        self.text_log = self.query_one("#conda_rich_log")
+        self.text_log = self.query_one("#conda_log")
         self.call_after_refresh(self.update_conda_envs)
         self.call_after_refresh(self.update_conda_env_listview)
 
@@ -133,9 +133,9 @@ class Conda(VerticalScroll):
             new_env_version = self.query_one("#new_env_version_select").value
 
             event.button.disabled = True
-            self.text_log.write(f"Creating new environment: {new_env_name} with Python {new_env_version} ...")
-            await self.run_command_richlog([f'{self.conda_info_root}/bin/conda', 'create', '-y', '-n', new_env_name, f'python={new_env_version}'])
-            self.text_log.write("Done.\n")
+            self.text_log.write_line(f"Creating new environment: {new_env_name} with Python {new_env_version} ...")
+            await self.run_command_log([f'{self.conda_info_root}/bin/conda', 'create', '-y', '-n', new_env_name, f'python={new_env_version}'])
+            self.text_log.write_line("Done.\n")
             event.button.disabled = False
 
             self.update_conda_envs()
@@ -148,7 +148,7 @@ class Conda(VerticalScroll):
         self.query_one(ListView).refresh()
 
     def on_list_view_selected(self, event: ListView.Selected):
-        # self.text_log.write(f"Selected: !!!!")
+        # self.text_log.write_line(f"Selected: !!!!")
         self.conda_prefix = self._get_conda_prefix()
 
     @on(Select.Changed)
@@ -199,6 +199,6 @@ class Conda(VerticalScroll):
             )
         yield VerticalGroup(
             Label("Console Log"),
-            RichLog(id="conda_rich_log"),
-            id="conda_rich_log_group"
+            Log(id="conda_log"),
+            id="conda_log_group"
         )

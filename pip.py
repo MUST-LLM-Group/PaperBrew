@@ -7,7 +7,7 @@ from textual import on
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup
 from textual.widget import Widget
-from textual.widgets import RichLog, Button, ListView, Label, ListItem, Select, Input, Rule
+from textual.widgets import Button, ListView, Label, ListItem, Select, Input, Rule, Log
 from rich.syntax import Syntax
 import asyncio
 import subprocess
@@ -34,10 +34,10 @@ class Pip(VerticalScroll):
         self.pip_package_list_view = PipPackageListView(id="pip_package_list_view")
 
 
-    async def run_command_richlog(self, command, should_send_to_richlog: bool = True):
+    async def run_command_log(self, command, should_send_to_log: bool = True):
         # 打印command
-        if should_send_to_richlog:
-            self.text_log.write(f"- {' '.join(command)}")
+        if should_send_to_log:
+            self.text_log.write_line(f"- {' '.join(command)}")
 
         # 创建子进程，并设置管道以捕获标准输出
         process = await asyncio.create_subprocess_exec(
@@ -56,19 +56,19 @@ class Pip(VerticalScroll):
                 break
             # 解码并打印输出
             lines.append(line.decode().strip())
-            if should_send_to_richlog:
-                self.text_log.write(line.decode().strip())
+            if should_send_to_log:
+                self.text_log.write_line(line.decode().strip())
 
         # 等待子进程结束
         await process.wait()
         # 检查子进程退出码
         if process.returncode == 0:
-            if should_send_to_richlog:
-                self.text_log.write("\n")
+            if should_send_to_log:
+                self.text_log.write_line("\n")
         else:
             error = await process.stderr.read()
-            if should_send_to_richlog:
-                self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
+            if should_send_to_log:
+                self.text_log.write_line(f"Command failed with error: {error.decode().strip()}\n\n")
         return lines
 
     def run_command(self, command):
@@ -93,8 +93,8 @@ class Pip(VerticalScroll):
 
     def on_mount(self) -> None:
         """Called  when the DOM is ready."""
-        self.text_log = self.query_exactly_one("#pip_rich_log")
-        self.text_log.write(f"Pip Version: {self.pip_version}\n\n")
+        self.text_log = self.query_exactly_one("#pip_log")
+        self.text_log.write_line(f"Pip Version: {self.pip_version}\n\n")
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         package_name = self.query_one(Input).value
@@ -106,13 +106,13 @@ class Pip(VerticalScroll):
                 # get pip mirrors
                 pip_mirror = self.query_one("#pip_mirrors_select").value
                 if pip_mirror == "清华源":
-                    await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple', package_name])
+                    await self.run_command_log(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple', package_name])
                 elif pip_mirror == "阿里云":
-                    await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://mirrors.aliyun.com/pypi/simple', package_name])
+                    await self.run_command_log(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://mirrors.aliyun.com/pypi/simple', package_name])
                 elif pip_mirror == "华为云":
-                    await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://mirrors.huaweicloud.com/pypi/simple', package_name])
+                    await self.run_command_log(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', '-i', 'https://mirrors.huaweicloud.com/pypi/simple', package_name])
                 else:
-                    await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', package_name])
+                    await self.run_command_log(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'install', package_name])
                 # refresh pip package list
                 await self.refresh_pip_packages(self.selected_env)
 
@@ -121,7 +121,7 @@ class Pip(VerticalScroll):
 
         if event.button.id == "pip_uninstall_button":
             if package_name != "":
-                await self.run_command_richlog(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'uninstall', '-y', package_name])
+                await self.run_command_log(['conda', 'run', '-n', self.selected_env, '--live-stream', 'pip', 'uninstall', '-y', package_name])
 
 
     def on_list_view_selected(self, event: ListView.Selected):
@@ -132,30 +132,30 @@ class Pip(VerticalScroll):
         # 判断id
         if event.select.id == "conda_env_select":
             self.selected_env = event.value
-            self.text_log.write(f"Selected conda env: {event.value}\n\n")
+            self.text_log.write_line(f"Selected conda env: {event.value}\n\n")
             if self.selected_env != Select.BLANK:
                 await self.refresh_pip_packages(event.value)
         if event.select.id == "pip_mirrors_select":
             if event.value == Select.BLANK:
                 return
             pip_mirror = event.value
-            self.text_log.write(f"Selected pip mirror: {event.value}\n\n")
+            self.text_log.write_line(f"Selected pip mirror: {event.value}\n\n")
             # pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
             if pip_mirror == "清华源":
-                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'])
+                await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'])
             elif pip_mirror == "中科大":
-                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.ustc.edu.cn/pypi/web/simple'])
+                await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.ustc.edu.cn/pypi/web/simple'])
             elif pip_mirror == "阿里云":
-                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.aliyun.com/pypi/simple'])
+                await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.aliyun.com/pypi/simple'])
             elif pip_mirror == "华为云":
-                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.huaweicloud.com/pypi/simple'])
+                await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://mirrors.huaweicloud.com/pypi/simple'])
             else:
-                await self.run_command_richlog(['pip', 'config', 'set', 'global.index-url', 'https://pypi.org/simple'])
+                await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://pypi.org/simple'])
 
 
 
     async def refresh_pip_packages(self, env_name):
-        pip_packages_raw = await self.run_command_richlog(['conda', 'run', '-n', env_name, 'pip', 'list'], should_send_to_richlog=False)
+        pip_packages_raw = await self.run_command_log(['conda', 'run', '-n', env_name, 'pip', 'list'], should_send_to_log=False)
         self.pip_package_list_view.pip_packages = pip_packages_raw[2:]
 
     def read_pip_mirror(self):
@@ -205,6 +205,6 @@ class Pip(VerticalScroll):
 
         yield VerticalGroup(
             Label("Console Log"),
-            RichLog(highlight=True, markup=True, id="pip_rich_log"),
-            id="pip_rich_log_group"
+            Log(id="pip_log"),
+            id="pip_log_group"
         )
