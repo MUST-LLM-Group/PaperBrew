@@ -34,9 +34,10 @@ class Pip(VerticalScroll):
         self.pip_package_list_view = PipPackageListView(id="pip_package_list_view")
 
 
-    async def run_command_richlog(self, command):
+    async def run_command_richlog(self, command, should_send_to_richlog: bool = True):
         # 打印command
-        self.text_log.write(f"- {' '.join(command)}")
+        if should_send_to_richlog:
+            self.text_log.write(f"- {' '.join(command)}")
 
         # 创建子进程，并设置管道以捕获标准输出
         process = await asyncio.create_subprocess_exec(
@@ -55,16 +56,19 @@ class Pip(VerticalScroll):
                 break
             # 解码并打印输出
             lines.append(line.decode().strip())
-            self.text_log.write(line.decode().strip())
+            if should_send_to_richlog:
+                self.text_log.write(line.decode().strip())
 
         # 等待子进程结束
         await process.wait()
         # 检查子进程退出码
         if process.returncode == 0:
-            self.text_log.write("\n")
+            if should_send_to_richlog:
+                self.text_log.write("\n")
         else:
             error = await process.stderr.read()
-            self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
+            if should_send_to_richlog:
+                self.text_log.write(f"Command failed with error: {error.decode().strip()}\n\n")
         return lines
 
     def run_command(self, command):
@@ -145,7 +149,7 @@ class Pip(VerticalScroll):
 
 
     async def refresh_pip_packages(self, env_name):
-        pip_packages_raw = await self.run_command_richlog(['conda', 'run', '-n', env_name, 'pip', 'list'])
+        pip_packages_raw = await self.run_command_richlog(['conda', 'run', '-n', env_name, 'pip', 'list'], should_send_to_richlog=False)
         self.pip_package_list_view.pip_packages = pip_packages_raw[2:]
 
     def read_pip_mirror(self):
