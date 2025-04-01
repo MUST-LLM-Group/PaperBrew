@@ -42,8 +42,11 @@ class HuggingFace(VerticalScroll):
         #     # disable button
         #     event.button.disabled = True
         #     await self._install_miniconda3_linux()
-        if event.button.id == "hf_home_button":
+        if event.button.id == "hf_mirror_button":
+            self.post_message(self.SendCommand(f"export HF_MIRROR={self.query_one('#hf_mirrors_select').value}\n"))
+        elif event.button.id == "hf_home_button":
             self.post_message(self.SendCommand(f"export HF_HOME={self.query_one("#hf_home_input").value}\n"))
+
 
 
     class SendCommand(Message):
@@ -52,16 +55,16 @@ class HuggingFace(VerticalScroll):
             super().__init__()
             self.command = command
 
-    @on(Select.Changed)
-    async def select_changed(self, event: Select.Changed) -> None:
-        # 判断id
-        if event.select.id == "hf_mirrors_select":
-            self.selected_mirror = event.value
-            if self.selected_mirror == Select.BLANK:
-                return
-            elif self.selected_mirror == "hf-mirror.com":
-                self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com\n"))
-                self.post_message(self.SendCommand("echo $HF_ENDPOINT\n"))
+    # @on(Select.Changed)
+    # async def select_changed(self, event: Select.Changed) -> None:
+    #     # 判断id
+    #     if event.select.id == "hf_mirrors_select":
+    #         self.selected_mirror = event.value
+    #         if self.selected_mirror == Select.BLANK:
+    #             return
+    #         elif self.selected_mirror == "hf-mirror.com":
+    #             self.post_message(self.SendCommand("export HF_ENDPOINT=https://hf-mirror.com\n"))
+    #             self.post_message(self.SendCommand("echo $HF_ENDPOINT\n"))
 
     def compose(self) -> ComposeResult:
 
@@ -72,6 +75,7 @@ class HuggingFace(VerticalScroll):
             Container(Label("HuggingFace Mirror", id="hf_mirror_label"),classes="text_box"),
             Select.from_values(["None", "hf-mirror.com"], value=hf_mirror,
                                id="hf_mirrors_select"),
+            Button("Set", classes="title", id="hf_mirror_button"),
         )
         hf_home = os.getenv("HF_HOME", "None")
         yield HorizontalGroup(

@@ -131,7 +131,7 @@ MemChart {
     width: 18;
 }
 
-#hf_home_input {
+#hf_mirrors_select, #hf_home_input {
     width: 40%;
 }
 #hf_home_button {
