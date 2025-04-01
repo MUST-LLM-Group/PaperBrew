@@ -65,7 +65,7 @@ class HuggingFace(VerticalScroll):
 
     def compose(self) -> ComposeResult:
 
-        yield Label("Notice: We only set envs for this running shell, it won't affect your system envs.", classes="title")
+        yield Label("Notice: envs only set for this running shell, not for system envs.", classes="title")
 
         hf_mirror = os.getenv("HF_MIRROR", "None")
         yield HorizontalGroup(
