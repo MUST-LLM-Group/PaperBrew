@@ -82,13 +82,13 @@ HF_HOME: {self.env_hf_home}
         cpu.border_title="CPU"
         yield cpu
 
-        mem = Mem()
-        mem.border_title = "MEM"
-        yield Mem()
+        # mem = Mem()
+        # mem.border_title = "MEM"
+        # yield Mem()
 
-        disk = Disk()
-        disk.border_title = "DISK"
-        yield disk
+        # disk = Disk()
+        # disk.border_title = "DISK"
+        # yield disk
 
 
         # hf = Static(f"HugginFace", classes="box", id="hf")
