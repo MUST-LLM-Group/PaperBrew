@@ -98,11 +98,11 @@ class PaperBrew(App):
 
         yield HorizontalGroup(
             Button("Magic Button", id="magic_button"),
-            Button("DashBoard", classes="main_button"),
-            Button("Conda", classes="main_button"),
-            Button("Pip", classes="main_button"),
-            Button("HuggingFace", classes="main_button"),
-            Button("Papers", classes="main_button"),
+            Button("DashBoard", classes="main_button", id="dashboard_button"),
+            Button("Conda", classes="main_button", id="conda_button"),
+            Button("Pip", classes="main_button", id="pip_button"),
+            Button("HuggingFace", classes="main_button", id="huggingface_button"),
+            Button("Papers", classes="main_button", id="papers_button"),
         )
         # with TabbedContent():
         #     with TabPane("DashBoard", id="dashboard"):
