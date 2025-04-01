@@ -186,7 +186,8 @@ class Conda(VerticalScroll):
         conda_info_root_label = Label(f"CONDA_ROOT: {self.conda_info_root}" + f"""\nCONDA_PREFIX: {self.conda_prefix}""", id="conda_info_root_label")
         yield conda_info_root_label
 
-        listview = ListView(*[ListItem(Label(f"{conda_env['name']:<16} {conda_env['python_version']}")) for conda_env in self.conda_envs], id="conda_env_listview")
+        # listview = ListView(*[ListItem(Label(f"{conda_env['name']:<16} {conda_env['python_version']}")) for conda_env in self.conda_envs], id="conda_env_listview")
+        listview = ListView(id="conda_env_listview")
         yield listview
 
         if self.conda_prefix is None:
