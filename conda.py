@@ -116,12 +116,20 @@ class Conda(VerticalScroll):
     async def on_mount(self) -> None:
         """Called  when the DOM is ready."""
         self.text_log = self.query_one("#conda_log")
-        self.call_after_refresh(self.update_conda_envs)
+        self.call_after_refresh(self.update_data)
 
     @work(exclusive=True, thread=True)
-    def update_conda_envs(self):
+    def update_data(self):
         self.update_conda_info_root()
         self.conda_prefix = self._get_conda_prefix()
+        self.app.call_from_thread(
+            self.query_one("#conda_info_root_label").update,
+            f"CONDA_ROOT: {self.conda_info_root}\nCONDA_PREFIX: {self.conda_prefix}"
+        )
+        self.update_conda_envs()
+
+
+    def update_conda_envs(self):
         envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
         envs.sort()
         # use conda run -n myenv python --version to get python version
@@ -157,17 +165,28 @@ class Conda(VerticalScroll):
             event.button.disabled = False
 
         if event.button.label == "Create New Env":
-            new_env_name = self.query_one("#new_env_name_input").value
-            new_env_version = self.query_one("#new_env_version_select").value
+            self.create_new_env_button_clicked(event)
 
-            event.button.disabled = True
-            self.text_log.write_line(f"Creating new environment: {new_env_name} with Python {new_env_version} ...")
-            await self.run_command_log([f'{self.conda_info_root}/bin/conda', 'create', '-y', '-n', new_env_name, f'python={new_env_version}'])
-            self.text_log.write_line("Done.\n")
-            event.button.disabled = False
 
-            # self.update_conda_envs()
-            # await self.update_conda_env_listview()
+    @work(exclusive=True, thread=True)
+    def create_new_env_button_clicked(self, event: Button.Pressed):
+        new_env_name = self.query_one("#new_env_name_input").value
+        new_env_version = self.query_one("#new_env_version_select").value
+
+        event.button.disabled = True
+        self.app.call_from_thread(
+            self.text_log.write_line,
+            f"Creating new environment: {new_env_name} with Python {new_env_version} ..."
+        )
+        self.app.call_from_thread(self.run_command_log,
+            [f'{self.conda_info_root}/bin/conda', 'create', '-y', '-n', new_env_name, f'python={new_env_version}'])
+        self.app.call_from_thread(
+            self.text_log.write_line,
+            "Done.\n"
+        )
+        event.button.disabled = False
+        self.update_conda_envs()
+
 
     def on_list_view_selected(self, event: ListView.Selected):
         # self.text_log.write_line(f"Selected: !!!!")
@@ -182,9 +201,7 @@ class Conda(VerticalScroll):
         self.conda_info_root = self.run_command(['conda', 'info', '--root'])
 
     def compose(self) -> ComposeResult:
-
-        conda_info_root_label = Label(f"CONDA_ROOT: {self.conda_info_root}" + f"""\nCONDA_PREFIX: {self.conda_prefix}""", id="conda_info_root_label")
-        yield conda_info_root_label
+        yield Label("", id="conda_info_root_label")
 
         # listview = ListView(*[ListItem(Label(f"{conda_env['name']:<16} {conda_env['python_version']}")) for conda_env in self.conda_envs], id="conda_env_listview")
         listview = ListView(id="conda_env_listview")
