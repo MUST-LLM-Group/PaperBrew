@@ -2,10 +2,12 @@ import asyncio
 import json
 
 import subprocess
+from time import sleep
+
 import psutil
 from rich.console import Group
 from rich.text import Text
-from textual import events
+from textual import events, work
 from textual.app import ComposeResult, RenderResult
 from textual.containers import Container
 from textual.reactive import reactive
@@ -36,10 +38,11 @@ class GPU(Widget):
 
     def start_gpu_monitor(self):
         if self.os_type == "darwin":
-            asyncio.create_task(self.get_macmon_output(3))
-        elif self.is_nvidia_smi_installed():
-            asyncio.create_task(self.get_nvidia_smi_output(3))
+            self.get_macmon_output(3)
+        elif self.is_nvidia_smi_installed:
+            self.get_nvidia_smi_output(3)
 
+    @work(exclusive=True, thread=True)
     def is_nvidia_smi_installed(self) -> bool:  # 检测是否有nvidia-smi命令
         if self.os_type == "linux" and self.cpu_arch == "x86_64":
             try:
@@ -49,7 +52,6 @@ class GPU(Widget):
                 output = result.stdout.strip()
                 if output.__contains__("No devices were found"):
                     return False
-
                 return True
             except subprocess.CalledProcessError:
                 print("nvidia-smi command not found")
@@ -73,18 +75,20 @@ class GPU(Widget):
 
         return gpu_dict
 
-    async def get_macmon_output(self, interval):
+
+    @work(exclusive=True, thread=True)
+    def get_macmon_output(self, interval):
         while True:
             result = subprocess.run(["macmon", "pipe", "-s", "1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
             # parse json
             json_result = json.loads(result.stdout)
-            self.query_one(Log).clear()
-            self.query_one(Log).write(f"{"Frequency:":<12} {json_result['gpu_usage'][0]}MHz\n")
-            self.query_one(Log).write(f"{"Usage:":<12} {json_result['gpu_usage'][1]* 100:.0f}% \n")
-            await asyncio.sleep(interval)
+            self.app.call_from_thread(self.query_one(Log).clear)
+            self.app.call_from_thread(self.query_one(Log).write_line, f"{"Frequency:":<12} {json_result['gpu_usage'][0]}MHz")
+            self.app.call_from_thread(self.query_one(Log).write_line, f"{"Usage:":<12} {json_result['gpu_usage'][1]* 100:.0f}%")
+            sleep(1)
 
-
-    async def get_nvidia_smi_output(self, interval):
+    @work(exclusive=True, thread=True)
+    def get_nvidia_smi_output(self, interval):
         while True:
             # run nvidia-smi command
             csv_result = subprocess.run(["nvidia-smi",
@@ -93,18 +97,16 @@ class GPU(Widget):
                                         text=True, check=True)
             # 整理为Python字典
             gpu_info_dict = self.csv_str_to_dict(csv_result.stdout)
-            self.query_one(Log).clear()
-
-            self.query_one(Log).write(f"{gpu_info_dict["name"]}\n\n")
-            self.query_one(Log).write(f"Usage: {gpu_info_dict["utilization.gpu [%]"]}%\n")
-            self.query_one(Log).write(f"TEMP: {gpu_info_dict["temperature.gpu"]}C\n")
-            self.query_one(Log).write(f"FAN: {gpu_info_dict["fan.speed [%]"]}%\n")
-            self.query_one(Log).write(
+            self.app.call_from_thread(self.query_one(Log).clear)
+            self.app.call_from_thread(self.query_one(Log).write, f"{gpu_info_dict["name"]}\n\n")
+            self.app.call_from_thread(self.query_one(Log).write, f"Usage: {gpu_info_dict["utilization.gpu [%]"]}%\n")
+            self.app.call_from_thread(self.query_one(Log).write, f"TEMP: {gpu_info_dict["temperature.gpu"]}C\n")
+            self.app.call_from_thread(self.query_one(Log).write, f"FAN: {gpu_info_dict["fan.speed [%]"]}%\n")
+            self.app.call_from_thread(self.query_one(Log).write,
                 f"POWER: {gpu_info_dict["power.draw [W]"]}W / {gpu_info_dict["power.limit [W]"]}W\n")
-            self.query_one(Log).write(
+            self.app.call_from_thread(self.query_one(Log).write,
                 f"MEM: {gpu_info_dict["memory.used [MiB]"]}MiB / {gpu_info_dict["memory.total [MiB]"]}MiB\n")
-
-            await asyncio.sleep(interval)
+            sleep(1)
 
     def compose(self) -> ComposeResult:
         yield Log()
