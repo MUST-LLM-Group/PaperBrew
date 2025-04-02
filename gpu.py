@@ -97,23 +97,29 @@ class GPU(Widget):
     @work(exclusive=True, thread=True)
     def get_nvidia_smi_output(self, interval):
         while True:
-            # run nvidia-smi command
-            csv_result = subprocess.run(["nvidia-smi",
-                                         "--query-gpu=name,temperature.gpu,fan.speed,power.draw,power.limit,memory.total,memory.used,utilization.gpu,compute_mode",
-                                         "--format=csv,nounits"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                        text=True, check=True)
-            # 整理为Python字典
-            gpu_info_dict = self.csv_str_to_dict(csv_result.stdout)
-            self.app.call_from_thread(self.query_one(Log).clear)
-            self.app.call_from_thread(self.query_one(Log).write, f"{gpu_info_dict["name"]}\n\n")
-            self.app.call_from_thread(self.query_one(Log).write, f"Usage: {gpu_info_dict["utilization.gpu [%]"]}%\n")
-            self.app.call_from_thread(self.query_one(Log).write, f"TEMP: {gpu_info_dict["temperature.gpu"]}C\n")
-            self.app.call_from_thread(self.query_one(Log).write, f"FAN: {gpu_info_dict["fan.speed [%]"]}%\n")
-            self.app.call_from_thread(self.query_one(Log).write,
-                f"POWER: {gpu_info_dict["power.draw [W]"]}W / {gpu_info_dict["power.limit [W]"]}W\n")
-            self.app.call_from_thread(self.query_one(Log).write,
-                f"MEM: {gpu_info_dict["memory.used [MiB]"]}MiB / {gpu_info_dict["memory.total [MiB]"]}MiB\n")
-            sleep(1)
+            try:
+                # run nvidia-smi command
+                csv_result = subprocess.run(["nvidia-smi",
+                                             "--query-gpu=name,temperature.gpu,fan.speed,power.draw,power.limit,memory.total,memory.used,utilization.gpu,compute_mode",
+                                             "--format=csv,nounits"], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                            text=True, check=True)
+                # 整理为Python字典
+                gpu_info_dict = self.csv_str_to_dict(csv_result.stdout)
+                self.app.call_from_thread(self.query_one(Log).clear)
+                self.app.call_from_thread(self.query_one(Log).write, f"{gpu_info_dict["name"]}\n\n")
+                self.app.call_from_thread(self.query_one(Log).write, f"Usage: {gpu_info_dict["utilization.gpu [%]"]}%\n")
+                self.app.call_from_thread(self.query_one(Log).write, f"TEMP: {gpu_info_dict["temperature.gpu"]}C\n")
+                self.app.call_from_thread(self.query_one(Log).write, f"FAN: {gpu_info_dict["fan.speed [%]"]}%\n")
+                self.app.call_from_thread(self.query_one(Log).write,
+                    f"POWER: {gpu_info_dict["power.draw [W]"]}W / {gpu_info_dict["power.limit [W]"]}W\n")
+                self.app.call_from_thread(self.query_one(Log).write,
+                    f"MEM: {gpu_info_dict["memory.used [MiB]"]}MiB / {gpu_info_dict["memory.total [MiB]"]}MiB\n")
+                sleep(1)
+            except Exception as e:
+                self.app.call_from_thread(self.query_one(Log).clear)
+                self.app.call_from_thread(self.query_one(Log).write_line, "Nvidia GPU not detected")
+                print(f"An unexpected error occurred: {e}")
+                break
 
     def compose(self) -> ComposeResult:
         yield Log(id="gpu_log")
