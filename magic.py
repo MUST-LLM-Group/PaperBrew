@@ -4,7 +4,7 @@ import asyncio
 import os
 from asyncio import subprocess
 
-from textual import events
+from textual import events, work
 from textual.app import ComposeResult
 from textual.containers import Container, VerticalScroll
 from textual.reactive import reactive
@@ -46,6 +46,7 @@ class Magic(VerticalScroll):
         }
     ]
 
+    @work(exclusive=True, thread=True)
     async def start(self):
         log: Log = self.query_one("#magic_log")
         self.text_log = log
@@ -67,8 +68,7 @@ class Magic(VerticalScroll):
 
 
     def on_mount(self, event: events.Mount) -> None:
-        # self.call_after_refresh(self.start)
-        self.call_later(self.start)
+        self.call_after_refresh(self.start)
 
 
     def compose(self) -> ComposeResult:
