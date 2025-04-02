@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import subprocess
 import psutil
@@ -32,7 +33,9 @@ class GPU(Widget):
 
     def on_mount(self) -> None:
         if self.is_nvidia_smi_installed():
-            asyncio.create_task(self.get_nvidia_smi_output(1))
+            asyncio.create_task(self.get_nvidia_smi_output(3))
+        elif self.os_type == "darwin":
+            asyncio.create_task(self.get_macmon_output(3))
 
     def is_nvidia_smi_installed(self) -> bool:  # 检测是否有nvidia-smi命令
         if self.os_type == "linux" and self.cpu_arch == "x86_64":
@@ -67,6 +70,17 @@ class GPU(Widget):
 
         return gpu_dict
 
+    async def get_macmon_output(self, interval):
+        while True:
+            result = subprocess.run(["macmon", "pipe", "-s", "1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+            # parse json
+            json_result = json.loads(result.stdout)
+            self.query_one(Log).clear()
+            self.query_one(Log).write(f"{"Frequency:":<12} {json_result['gpu_usage'][0]}MHz\n")
+            self.query_one(Log).write(f"{"Usage:":<12} {json_result['gpu_usage'][1]* 100:.0f}% \n")
+            await asyncio.sleep(interval)
+
+
     async def get_nvidia_smi_output(self, interval):
         while True:
             # run nvidia-smi command
@@ -87,7 +101,7 @@ class GPU(Widget):
             self.query_one(Log).write(
                 f"MEM: {gpu_info_dict["memory.used [MiB]"]}MiB / {gpu_info_dict["memory.total [MiB]"]}MiB\n")
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(interval)
 
     def compose(self) -> ComposeResult:
         yield Log()
