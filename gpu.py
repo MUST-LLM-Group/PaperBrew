@@ -32,7 +32,7 @@ class GPU(Widget):
         return platform.system().lower()
 
     def on_mount(self) -> None:
-        self.call_later(self.start_gpu_monitor)
+        self.call_after_refresh(self.start_gpu_monitor)
 
     def start_gpu_monitor(self):
         if self.os_type == "darwin":
