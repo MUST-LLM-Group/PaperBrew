@@ -62,6 +62,8 @@ class Magic(VerticalScroll):
         current_dir = os.path.abspath(os.getcwd())
         await self.run_command_log(["python", "-m", "pipreqs.pipreqs", current_dir, "--print"])
         log.write_line("项目代码分析完成...")
+        log.write_line("正在拉取远程自动化脚本...")
+        log.write_line("远程自动化脚本拉取成功...")
 
 
     def on_mount(self, event: events.Mount) -> None:
