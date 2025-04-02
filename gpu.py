@@ -32,10 +32,10 @@ class GPU(Widget):
         return platform.system().lower()
 
     def on_mount(self) -> None:
-        if self.is_nvidia_smi_installed():
-            asyncio.create_task(self.get_nvidia_smi_output(3))
-        elif self.os_type == "darwin":
+        if self.os_type == "darwin":
             asyncio.create_task(self.get_macmon_output(3))
+        elif self.is_nvidia_smi_installed():
+            asyncio.create_task(self.get_nvidia_smi_output(3))
 
     def is_nvidia_smi_installed(self) -> bool:  # 检测是否有nvidia-smi命令
         if self.os_type == "linux" and self.cpu_arch == "x86_64":
