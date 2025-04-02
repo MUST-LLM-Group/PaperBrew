@@ -2,7 +2,7 @@ import os
 from platform import python_version
 from typing import List
 
-from textual import on, events
+from textual import on, events, work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, HorizontalGroup, VerticalGroup
 from textual.widgets import Button, ListView, Label, ListItem, Input, Select, Log
@@ -23,13 +23,9 @@ class Conda(VerticalScroll):
         super().__init__(id=id)
         # 调用当前类的私有方法 _get_conda_env() 来获取 conda 环境的前缀路径
         # 并将结果赋值给实例变量 self.conda_prefix
-        self.conda_info_root = None
-        self.update_conda_info_root()
+        self.conda_info_root = ""
         self.conda_envs = []
-
         self.text_log = None
-        self.conda_prefix = self._get_conda_prefix()
-
         self.grabbed = False
 
     async def _install_miniconda3_linux(self):
@@ -121,7 +117,37 @@ class Conda(VerticalScroll):
         """Called  when the DOM is ready."""
         self.text_log = self.query_one("#conda_log")
         self.call_after_refresh(self.update_conda_envs)
-        self.call_after_refresh(self.update_conda_env_listview)
+
+    @work(exclusive=True, thread=True)
+    def update_conda_envs(self):
+        self.update_conda_info_root()
+        self.conda_prefix = self._get_conda_prefix()
+        envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
+        envs.sort()
+        # use conda run -n myenv python --version to get python version
+        self.conda_envs = []
+        for env in envs:
+            # 这种方法太慢了！
+            # python_version = self.run_command([f'{self.conda_info_root}/bin/conda', 'run', '-n', env, 'python', '--version'])
+
+            # 通过 ls envs/env_name/conda-meta/python-3.12.9-*.json文件 来判断python版本为3.12
+            files = os.listdir(self.conda_info_root + "/envs/" + env + "/conda-meta")
+            # 正则表达式匹配 'python-版本号' 格式
+            pattern = r'python-(\d+\.\d+\.\d+)'
+            # 提取版本号
+            import re
+            version_numbers = [re.search(pattern, file).group(1) for file in files if re.search(pattern, file)]
+
+            self.conda_envs.append({
+                "name": f"{env}",
+                "python_version" : version_numbers[0] if version_numbers else ""
+            })
+        self.app.call_from_thread(self.query_one(ListView).clear)
+        for conda_env in self.conda_envs:
+            self.app.call_from_thread(
+                self.query_one(ListView).append,
+                ListItem(Label(f"{conda_env['name']:<16} {conda_env['python_version']}")))
+        self.app.call_from_thread(self.query_one(ListView).refresh)
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.label == "Install MiniConda3":
@@ -140,14 +166,8 @@ class Conda(VerticalScroll):
             self.text_log.write_line("Done.\n")
             event.button.disabled = False
 
-            self.update_conda_envs()
-            await self.update_conda_env_listview()
-
-    async def update_conda_env_listview(self):
-        await self.query_one(ListView).clear()
-        for conda_env in self.conda_envs:
-            await self.query_one(ListView).append(ListItem(Label(f"{conda_env['name']:<16} {conda_env['python_version']}")))
-        self.query_one(ListView).refresh()
+            # self.update_conda_envs()
+            # await self.update_conda_env_listview()
 
     def on_list_view_selected(self, event: ListView.Selected):
         # self.text_log.write_line(f"Selected: !!!!")
@@ -157,28 +177,6 @@ class Conda(VerticalScroll):
     def select_changed(self, event: Select.Changed) -> None:
         # self.title = str(event.value)
         pass
-
-    async def update_conda_envs(self):
-        envs = [f for f in os.listdir(self.conda_info_root + "/envs") if not f.startswith('.')]
-        envs.sort()
-        # use conda run -n myenv python --version to get python version
-        self.conda_envs = []
-        for env in envs:
-            # 这种方法太慢了！
-            python_version = self.run_command([f'{self.conda_info_root}/bin/conda', 'run', '-n', env, 'python', '--version'])
-
-            # 通过 ls envs/env_name/conda-meta/python-3.12.9-*.json文件 来判断python版本为3.12
-            files = os.listdir(self.conda_info_root + "/envs/" + env + "/conda-meta")
-            # 正则表达式匹配 'python-版本号' 格式
-            pattern = r'python-(\d+\.\d+\.\d+)'
-            # 提取版本号
-            import re
-            version_numbers = [re.search(pattern, file).group(1) for file in files if re.search(pattern, file)]
-
-            self.conda_envs.append({
-                "name": f"{env}",
-                "python_version" : version_numbers[0] if version_numbers else ""
-            })
 
     def update_conda_info_root(self):
         self.conda_info_root = self.run_command(['conda', 'info', '--root'])
