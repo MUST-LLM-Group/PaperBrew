@@ -9,8 +9,10 @@ Download the latest [binary release](https://github.com/MUST-LLM-Group/PaperBrew
 ## Development
 Python 3.7+ is required.
 ```
-pip install textual textual-dev psutil pyte pipreqs
+pip install textual textual-dev psutil pyte pipreqs py-cpuinfo
 ```
+
+GPU Monitor relies on `nvidia-smi`(PC) or `macmon`(macOS)
 
 ```
 pyinstaller main.py --add-data "main.tcss:."

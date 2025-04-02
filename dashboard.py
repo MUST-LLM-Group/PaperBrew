@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import platform
 from textual import events
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Static
+from cpuinfo import get_cpu_info
 
 from cpu import CPU
-from disk import Disk
 from gpu import GPU
-from mem import Mem
 
 
 class DashBoard(VerticalScroll):
@@ -27,18 +27,19 @@ class DashBoard(VerticalScroll):
         super().__init__(name=name, id=id, classes=classes)
         self.os_type = self._get_os_type()
         self.cpu_arch = self._get_cpu_arch()
+        self.cpu_model = self._get_cpu_model()
         self.hostname = self._get_hostname()
         self.python_version = self._get_python_version()
         self.env_hf_endpoint = self._get_env_hf_endpoint()
         self.env_hf_home = self._get_env_hf_home()
         self.grabbed = False
 
-
-
     def _get_cpu_arch(self) -> str:
-        import platform
         return platform.machine()
 
+    def _get_cpu_model(self) -> str:
+        cpuinfo = get_cpu_info()
+        return cpuinfo['brand_raw']
 
     def _get_env_hf_home(self) -> str:
         import os
@@ -80,7 +81,7 @@ HF_HOME: {self.env_hf_home}
         yield basic_info
 
         cpu = CPU()
-        cpu.border_title="CPU"
+        cpu.border_title=f"CPU - {self.cpu_model}"
         yield cpu
 
         # mem = Mem()

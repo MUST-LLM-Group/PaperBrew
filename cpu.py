@@ -66,7 +66,7 @@ class CPU(Widget):
             cpu_usage = psutil.cpu_percent()
             # self.cpu_usage = cpu_usage
             self.braille_stream.add_value(cpu_usage)
-            val_string = f" CPU Usage {cpu_usage}% "
+            val_string = f"Usage {cpu_usage}% "
             graph = "\n".join(
                 [val_string + self.braille_stream.graph[0][len(val_string):]] + self.braille_stream.graph[1:]
             )
