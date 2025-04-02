@@ -79,13 +79,20 @@ class GPU(Widget):
     @work(exclusive=True, thread=True)
     def get_macmon_output(self, interval):
         while True:
-            result = subprocess.run(["macmon", "pipe", "-s", "1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-            # parse json
-            json_result = json.loads(result.stdout)
-            self.app.call_from_thread(self.query_one(Log).clear)
-            self.app.call_from_thread(self.query_one(Log).write_line, f"{"Frequency:":<12} {json_result['gpu_usage'][0]}MHz")
-            self.app.call_from_thread(self.query_one(Log).write_line, f"{"Usage:":<12} {json_result['gpu_usage'][1]* 100:.0f}%")
-            sleep(1)
+            try:
+                result = subprocess.run(["macmon", "pipe", "-s", "1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+                # parse json
+                json_result = json.loads(result.stdout)
+                self.app.call_from_thread(self.query_one(Log).clear)
+                self.app.call_from_thread(self.query_one(Log).write_line, f"{"Frequency:":<12} {json_result['gpu_usage'][0]}MHz")
+                self.app.call_from_thread(self.query_one(Log).write_line, f"{"Usage:":<12} {json_result['gpu_usage'][1]* 100:.0f}%")
+                sleep(1)
+            except Exception as e:
+                self.app.call_from_thread(self.query_one(Log).clear)
+                self.app.call_from_thread(self.query_one(Log).write_line, "CPU Monitor relies on macmon.")
+                self.app.call_from_thread(self.query_one(Log).write_line, "Run 'brew install macmon' to install it.")
+                print(f"An unexpected error occurred: {e}")
+                break
 
     @work(exclusive=True, thread=True)
     def get_nvidia_smi_output(self, interval):
