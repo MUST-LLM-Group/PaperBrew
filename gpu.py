@@ -32,6 +32,9 @@ class GPU(Widget):
         return platform.system().lower()
 
     def on_mount(self) -> None:
+        self.call_later(self.start_gpu_monitor)
+
+    def start_gpu_monitor(self):
         if self.os_type == "darwin":
             asyncio.create_task(self.get_macmon_output(3))
         elif self.is_nvidia_smi_installed():
