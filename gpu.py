@@ -109,4 +109,4 @@ class GPU(Widget):
             sleep(1)
 
     def compose(self) -> ComposeResult:
-        yield Log()
+        yield Log(id="gpu_log")

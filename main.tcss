@@ -48,8 +48,12 @@ HuggingFace {
 }
 
 GPU {
-    height: 8;
+    height: 9;
     border: solid #9ACBD0;
+}
+#gpu_log {
+    height: 8;
+    background: black;
 }
 CPU {
     height: 14;
