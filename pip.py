@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import List
 
-from textual import on, events
+from textual import on, events, work
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll, VerticalGroup, HorizontalGroup, Container
 from textual.widget import Widget
@@ -28,11 +28,46 @@ class Pip(VerticalScroll):
 
     def __init__(self, id: str | None= None):
         super().__init__(id = id)
-        pip_version_raw = self.run_command(["pip", "--version"])
-        self.pip_version = pip_version_raw.split(" ")[1]
+        # pip_version_raw = self.run_command(["pip", "--version"])
+        # self.pip_version = pip_version_raw.split(" ")[1]
         self.selected_env = Select.BLANK
         self.pip_package_list_view = PipPackageListView(id="pip_package_list_view")
         self.grabbed = False
+
+    def on_mount(self) -> None:
+        """Called  when the DOM is ready."""
+        self.text_log = self.query_exactly_one("#pip_log")
+        # self.text_log.write_line(f"Pip Version: {self.pip_version}\n\n")
+        self.call_after_refresh(self.update_data)
+
+    @work(exclusive=True, thread=True)
+    def update_data(self):
+        pip_mirror = self.run_command(['pip', 'config', 'get', 'global.index-url'])
+        if pip_mirror is None:
+            pip_mirror = "官方源(国外)"
+        elif pip_mirror == "https://pypi.tuna.tsinghua.edu.cn/simple":
+            pip_mirror = "清华源"
+        elif pip_mirror == "https://mirrors.ustc.edu.cn/pypi/web/simple":
+            pip_mirror = "中科大"
+        elif pip_mirror == "https://mirrors.huaweicloud.com/pypi/simple":
+            pip_mirror = "华为云"
+        elif pip_mirror == "https://mirrors.aliyun.com/pypi/simple":
+            pip_mirror = "阿里云"
+        else:
+            pip_mirror = "官方源(国外)"
+        self.query_one("#pip_mirrors_select", Select).value = pip_mirror
+
+
+        conda_info_root = self.run_command(['conda', 'info', '--root'])
+        conda_envs = [f for f in os.listdir(conda_info_root + "/envs") if not f.startswith('.')]
+        conda_envs.sort()
+        conda_env_select = self.query_one("#conda_env_select", Select)
+        conda_env_select.set_options([(env, env) for env in conda_envs])
+
+
+    async def refresh_pip_packages(self, env_name):
+        pip_packages_raw = await self.run_command_log(['conda', 'run', '-n', env_name, 'pip', 'list'], should_send_to_log=False)
+        self.pip_package_list_view.pip_packages = pip_packages_raw[2:]
 
 
     async def run_command_log(self, command, should_send_to_log: bool = True):
@@ -91,12 +126,6 @@ class Pip(VerticalScroll):
             # 命令未找到
             return "Command not found. Please check if the command is installed and in the system PATH."
 
-
-    def on_mount(self) -> None:
-        """Called  when the DOM is ready."""
-        self.text_log = self.query_exactly_one("#pip_log")
-        self.text_log.write_line(f"Pip Version: {self.pip_version}\n\n")
-
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         package_name = self.query_one(Input).value
         if event.button.id == "pip_install_button":
@@ -153,50 +182,21 @@ class Pip(VerticalScroll):
             else:
                 await self.run_command_log(['pip', 'config', 'set', 'global.index-url', 'https://pypi.org/simple'])
 
-
-
-    async def refresh_pip_packages(self, env_name):
-        pip_packages_raw = await self.run_command_log(['conda', 'run', '-n', env_name, 'pip', 'list'], should_send_to_log=False)
-        self.pip_package_list_view.pip_packages = pip_packages_raw[2:]
-
-    def read_pip_mirror(self):
-        pip_mirror = self.run_command(['pip', 'config', 'get', 'global.index-url'])
-        return pip_mirror
-
     def compose(self) -> ComposeResult:
         # pip_version_label = Label(f"Pip Version: {self.pip_version}", classes="pip-version")
         # yield pip_version_label
 
-        pip_mirror = self.read_pip_mirror()
-        if pip_mirror is None:
-            pip_mirror = "官方源(国外)"
-        elif pip_mirror == "https://pypi.tuna.tsinghua.edu.cn/simple":
-            pip_mirror = "清华源"
-        elif pip_mirror == "https://mirrors.ustc.edu.cn/pypi/web/simple":
-            pip_mirror = "中科大"
-        elif pip_mirror == "https://mirrors.huaweicloud.com/pypi/simple":
-            pip_mirror = "华为云"
-        elif pip_mirror == "https://mirrors.aliyun.com/pypi/simple":
-            pip_mirror = "阿里云"
-        else:
-            pip_mirror = "官方源(国外)"
-
         yield HorizontalGroup(
             Container(Label("Pip Mirror(Global)", id="pip_mirror_label"),
                       classes="text_box"),
-            Select.from_values(["官方源(国外)", "清华源", "中科大", "阿里云", "华为云"], value=pip_mirror, id="pip_mirrors_select"),
+            Select.from_values(["官方源(国外)", "清华源", "中科大", "阿里云", "华为云"], value=Select.BLANK, id="pip_mirrors_select"),
             id="pip_horizontal_group"
         )
-
-        conda_info_root = self.run_command(['conda', 'info', '--root'])
-        conda_envs = [f for f in os.listdir(conda_info_root + "/envs") if not f.startswith('.')]
-        conda_envs.sort()
         yield HorizontalGroup(
             Container(Label("Conda Env", id="conda_env_label"),
                       classes="text_box"),
-            Select({(v, v) for v in conda_envs}, id="conda_env_select", value=self.selected_env),
+            Select([], id="conda_env_select", value=Select.BLANK),
         )
-
 
         yield self.pip_package_list_view
 
