@@ -76,9 +76,9 @@ Python Version: {self.python_version}
 HF_ENDPOINT: {self.env_hf_endpoint}
 HF_HOME: {self.env_hf_home}
 """
-        basic_info = Static(status_str, classes="box", id="basic_info")
-        basic_info.border_title = "Basic Info"
-        yield basic_info
+        # basic_info = Static(status_str, classes="box", id="basic_info")
+        # basic_info.border_title = "Basic Info"
+        # yield basic_info
 
         cpu = CPU()
         cpu.border_title=f"CPU - {self.cpu_model}"
