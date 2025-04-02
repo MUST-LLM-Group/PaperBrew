@@ -3,6 +3,7 @@ import asyncio
 import psutil
 from rich.console import Group
 from rich.text import Text
+from textual import events
 from textual._time import time
 from textual.app import ComposeResult, RenderResult
 from textual.containers import Container
@@ -30,6 +31,9 @@ class CPU(Widget):
 
         # asyncio run get_cpu_usage in background
         asyncio.create_task(self.get_cpu_usage(1))
+
+    def on_resize(self, event: events.Resize) -> None:
+        self.braille_stream.reset_width(event.size.width - 2)
 
 
 
